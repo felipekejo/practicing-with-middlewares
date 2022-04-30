@@ -10,19 +10,63 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const {username} = request.headers
+  const user = users.find((user)=> user.username === username)
+
+  if(!user){
+    return response.status(404).json({error: 'User not found'})
+  }
+  request.user = user
+  return next()
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  const {user} = request
+  const lengthTodo = user.todos.length
+  
+  if(user.pro === true){
+    return next()
+  }
+  if(user.pro===false && lengthTodo>=10){
+    return response.status(403).json({erro:'You can not add more todo if you do not have Pro account'})
+  }
+return next()
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const {username} = request.headers
+  const {id} = request.params
+  const regexExp = /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi;
+  const idIsV4 = regexExp.test(id) 
+  const user = users.find((user)=> user.username === username)
+
+ 
+
+  if(!user){
+    return response.status(404).json({error: 'User not found'})
+  }
+  if(!idIsV4){
+    return response.status(400).json({error:'ID es invalid'})
+  }
+  const todo = user.todos.find((todo)=> todo.id=== id)
+  if(!todo){
+    return response.status(404).json({error:'Todo does not exist'})
+  }
+  request.todo = todo
+  request.user = user
+  return next()
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  
+  const {id} = request.params
+  const user = users.find((user)=> user.id === id)
+
+  if(!user){
+    return response.status(404).json({error: 'User not found'})
+  }
+  request.user = user
+  return next()
 }
 
 app.post('/users', (request, response) => {
